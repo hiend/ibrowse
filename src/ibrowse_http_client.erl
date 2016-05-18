@@ -406,16 +406,22 @@ handle_sock_data(Data, #state{status           = get_body,
 accumulate_response(Data,
                     #state{
                       cur_req = #request{save_response_to_file = Srtf,
-                                         tmp_file_fd = undefined} = CurReq,
+                                         tmp_file_fd = undefined,
+                                         url = #url{ abspath = Url }} = CurReq,
                       http_status_code=[$2 | _]}=State) when Srtf /= false ->
     TmpFilename = make_tmp_filename(Srtf),
     Mode = file_mode(Srtf),
     case file:open(TmpFilename, [Mode, delayed_write, raw]) of
         {ok, Fd} ->
-            accumulate_response(Data, State#state{
+            case file:write(Fd, [<<"<!-- X-URL: ", Url/binary, " -->\n<BASE HREF=\"", Url/binary, "\">\n\n">>]) of
+                ok ->
+                  accumulate_response(Data, State#state{
                                         cur_req = CurReq#request{
                                                     tmp_file_fd = Fd,
                                                     tmp_file_name = TmpFilename}});
+                {error, Reason} ->
+                    {error, {file_write_error, Reason}}
+            end;
         {error, Reason} ->
             {error, {file_open_error, Reason}}
     end;
