@@ -413,7 +413,7 @@ accumulate_response(Data,
     Mode = file_mode(Srtf),
     case file:open(TmpFilename, [Mode, delayed_write, raw]) of
         {ok, Fd} ->
-            case file:write(Fd, [<<"<!-- X-URL: ", Url/binary, " -->\n<BASE HREF=\"", Url/binary, "\">\n\n">>]) of
+            case file:write(Fd, [<<"<!-- X-URL: ", Url, " -->\n<BASE HREF=\"", Url, "\">\n\n">>]) of
                 ok ->
                   accumulate_response(Data, State#state{
                                         cur_req = CurReq#request{
